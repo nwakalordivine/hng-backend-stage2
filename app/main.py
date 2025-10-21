@@ -10,13 +10,9 @@ app = FastAPI(title="String Analyzer Service")
 
 @app.on_event("startup")
 async def startup():
-    # This is an alternative to Alembic for simple projects:
-    # It creates tables if they don't exist, but doesn't handle migrations.
-    # Since we used Alembic, this isn't strictly needed, but good practice.
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-# --- Endpoint 4: Natural Language Filtering ---
 @app.get(
     "/strings/filter-by-natural-language",
     response_model=schemas.NLFilterResponse,
