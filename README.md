@@ -19,7 +19,7 @@ This project uses **SQLAlchemy** for asynchronous database operations and **Alem
 
 *(Remember to add your live deployment URL here once you host it!)*
 
-**Live API URL:** `[Your-Deployment-URL-Here]`
+**Live API URL:** `[https://ejikedivine-hng-backend-stage2.hf.space/]`
 
 ---
 
