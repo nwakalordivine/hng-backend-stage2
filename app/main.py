@@ -38,7 +38,6 @@ async def get_strings_by_natural_language(
     Raises **400 Bad Request** if the query cannot be parsed.
     """
 
-    # 1. Parse the query
     parsed_filters = parser.parse_natural_language_query(query)
 
     if parsed_filters is None:
@@ -47,10 +46,8 @@ async def get_strings_by_natural_language(
             detail="Unable to parse natural language query."
         )
 
-    # 2. Fetch data using the same CRUD function as /strings
     strings_list = await crud.get_filtered_strings(db, parsed_filters)
 
-    # 3. Format the response data
     response_data = []
     for db_string in strings_list:
         response_data.append(schemas.StringResponse(
@@ -67,7 +64,6 @@ async def get_strings_by_natural_language(
             created_at=db_string.created_at
         ))
 
-    # 4. Build the final response object
     interpreted_query = schemas.NLFilterInterpretedQuery(
         original=query,
         parsed_filters=schemas.NLFilterParsed(**parsed_filters)
@@ -80,7 +76,6 @@ async def get_strings_by_natural_language(
     )
 
 
-# --- Endpoint 1: Create/Analyze String ---
 @app.post(
     "/strings", 
     response_model=schemas.StringResponse, 
@@ -106,7 +101,6 @@ async def create_string(
             detail="String already exists in the system."
         )
     
-    # Manually structure the response to match the 'id' and 'properties' schema
     return schemas.StringResponse(
         id=db_string.sha256_hash,
         value=db_string.value,
@@ -121,7 +115,6 @@ async def create_string(
         created_at=db_string.created_at
     )
 
-# --- Endpoint 2: Get Specific String ---
 @app.get(
     "/strings/{string_value}", 
     response_model=schemas.StringResponse,
@@ -158,8 +151,6 @@ async def get_string(string_value: str, db: AsyncSession = Depends(get_db)):
 
 
 
-
-# --- Endpoint 3: Get All Strings with Filtering ---
 @app.get(
     "/strings", 
     response_model=schemas.FilterResponse,
@@ -183,7 +174,6 @@ async def get_all_strings(
     - **contains_character**: Filter for strings containing a specific character.
     """
     
-    # Collect filters into a dictionary, removing None values
     filters_applied = {
         "is_palindrome": is_palindrome,
         "min_length": min_length,
@@ -191,13 +181,10 @@ async def get_all_strings(
         "word_count": word_count,
         "contains_character": contains_character
     }
-    # Clean dict of keys where value is None
     active_filters = {k: v for k, v in filters_applied.items() if v is not None}
     
-    # Fetch data from CRUD function
     strings_list = await crud.get_filtered_strings(db, active_filters)
     
-    # Format the response
     response_data = []
     for db_string in strings_list:
         response_data.append(schemas.StringResponse(
@@ -220,7 +207,6 @@ async def get_all_strings(
         filters_applied=active_filters
     )
 
-# --- Endpoint 5: Delete String ---
 @app.delete(
     "/strings/{string_value}", 
     status_code=status.HTTP_204_NO_CONTENT,
@@ -241,5 +227,4 @@ async def delete_string(string_value: str, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="String does not exist in the system."
         )
-    # 204 responses have no body
     return None

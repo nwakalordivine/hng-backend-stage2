@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
-# --- Nested Models ---
 
 class StringProperties(BaseModel):
     """
@@ -16,11 +15,9 @@ class StringProperties(BaseModel):
     sha256_hash: str
     character_frequency_map: Dict[str, int]
 
-    # This allows us to create this model from an ORM object
     model_config = ConfigDict(from_attributes=True)
 
 
-# --- Endpoint Schemas ---
 
 class StringCreate(BaseModel):
     """

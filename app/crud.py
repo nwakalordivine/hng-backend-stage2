@@ -17,11 +17,8 @@ async def create_analyzed_string(
     
     Returns None if a string with the same value already exists.
     """
-    
-    # 1. Analyze the string
     properties = analyzer.analyze_string(string_data.value)
-    
-    # 2. Create the DB model instance
+
     db_string = models.AnalyzedString(
         value=string_data.value,
         sha256_hash=properties["sha256_hash"],
@@ -32,14 +29,12 @@ async def create_analyzed_string(
         character_frequency_map=properties["character_frequency_map"]
     )
     
-    # 3. Add to session and commit
     db.add(db_string)
     try:
         await db.commit()
         await db.refresh(db_string)
         return db_string
     except IntegrityError:
-        # This catches the 'unique=True' constraint violation
         await db.rollback()
         return None
 
@@ -50,7 +45,6 @@ async def get_string_by_value(
     """
     Fetches a single analyzed string by its 'value' field.
     """
-    # We indexed 'value', so this query is efficient
     query = select(models.AnalyzedString).where(models.AnalyzedString.value == string_value)
     result = await db.execute(query)
     return result.scalar_one_or_none()
@@ -77,7 +71,7 @@ async def get_filtered_strings(
     """
     query = select(models.AnalyzedString)
     
-    # Apply filters dynamically
+    # Applied filters dynamically
     if filters.get("is_palindrome") is not None:
         query = query.where(models.AnalyzedString.is_palindrome == filters["is_palindrome"])
         
@@ -92,9 +86,6 @@ async def get_filtered_strings(
     
     if filters.get("contains_character") is not None:
         char = filters["contains_character"]
-        # This is a JSONB-specific query for PostgreSQL.
-        # It checks if the character_frequency_map (a JSON field)
-        # has a top-level key equal to 'char'.
         query = query.where(models.AnalyzedString.character_frequency_map.has_key(char))
 
     result = await db.execute(query)
